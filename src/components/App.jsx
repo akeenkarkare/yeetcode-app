@@ -20,6 +20,8 @@ function App() {
     verified: false,
     name: '',
     leetUsername: '',
+    university: '',
+    customUniversity: '',
   });
   const [groupData, setGroupData] = useState({ code: '', joined: false });
   const [leaderboard, setLeaderboard] = useState([]);
@@ -58,6 +60,8 @@ function App() {
           savedUserData.verified || (savedUserData.leetUsername ? true : false), // Existing users are considered verified
         name: savedUserData.name || '',
         leetUsername: savedUserData.leetUsername || '',
+        university: savedUserData.university || '',
+        customUniversity: savedUserData.customUniversity || '',
       };
       setUserData(updatedUserData);
       console.log('Loaded saved user data:', updatedUserData);
@@ -367,6 +371,7 @@ function App() {
           hard: item.hard ?? 0,
           today: item.today ?? 0,
           xp: item.xp ?? 0, // Include XP from daily challenges
+          university: item.university || '',
         };
       });
       console.log('🔍 [FRONTEND] Normalized leaderboard:', normalized);
@@ -546,6 +551,19 @@ function App() {
               displayNameResult.error
             );
           }
+
+          // Update university
+          const universityToSave =
+            userData.university === 'other'
+              ? userData.customUniversity
+              : userData.university;
+          if (universityToSave) {
+            const uniResult = await window.electronAPI.updateUserUniversity(
+              userData.leetUsername,
+              universityToSave
+            );
+            console.log('University update result:', uniResult);
+          }
         } catch (displayNameError) {
           console.error('Error updating user data:', displayNameError);
           // Don't fail the whole process if update fails
@@ -677,7 +695,14 @@ function App() {
 
   // Logout handler
   const handleLogout = () => {
-    setUserData({ email: '', verified: false, name: '', leetUsername: '' });
+    setUserData({
+      email: '',
+      verified: false,
+      name: '',
+      leetUsername: '',
+      university: '',
+      customUniversity: '',
+    });
     setGroupData({ code: '', joined: false });
     setLeaderboard([]);
     setStep('welcome');

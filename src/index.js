@@ -817,6 +817,7 @@ ipcMain.handle('get-stats-for-group', async (event, groupId) => {
         hard: userData.hard ?? 0,
         today: userData.today ?? 0,
         xp: userData.xp ?? 0, // Include XP from daily challenges and other sources
+        university: userData.university || '',
       };
     })
   );
@@ -925,6 +926,41 @@ ipcMain.handle('update-display-name', async (event, username, displayName) => {
     return { success: false, error: err.message };
   }
 });
+
+// UPDATE UNIVERSITY
+ipcMain.handle(
+  'update-user-university',
+  async (event, username, university) => {
+    console.log(
+      '[DEBUG][update-user-university] called for username:',
+      username,
+      'university:',
+      university
+    );
+
+    const normalizedUsername = username.toLowerCase();
+    const updateParams = {
+      TableName: process.env.USERS_TABLE,
+      Key: { username: normalizedUsername },
+      UpdateExpression: 'SET university = :u',
+      ExpressionAttributeValues: {
+        ':u': university,
+      },
+    };
+
+    try {
+      const updateRes = await ddb.update(updateParams).promise();
+      console.log(
+        '[DEBUG][update-user-university] ddb.update response:',
+        JSON.stringify(updateRes, null, 2)
+      );
+      return { success: true };
+    } catch (err) {
+      console.error('[ERROR][update-user-university] ddb.update error:', err);
+      return { success: false, error: err.message };
+    }
+  }
+);
 
 // Add handler to open URLs in system browser
 ipcMain.handle('open-external-url', async (event, url) => {

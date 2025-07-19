@@ -122,6 +122,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     );
   },
 
+  updateUserUniversity: (username, university) => {
+    const validatedUsername = validateInput.username(username);
+    const validatedUniversity =
+      university && typeof university === 'string' ? university.trim() : '';
+    return ipcRenderer.invoke(
+      'update-user-university',
+      validatedUsername,
+      validatedUniversity
+    );
+  },
+
   openExternalUrl: url => {
     const validatedUrl = validateInput.url(url);
     return ipcRenderer.invoke('open-external-url', validatedUrl);
